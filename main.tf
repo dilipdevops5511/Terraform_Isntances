@@ -49,23 +49,24 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_instance" "web_server" {
-  ami           = "ami-0f8ca728008ff5af4"
+  ami           = "ami-05e00961530ae1b55"
   instance_type = "t2.micro"
-  key_name      = "terraform-key"
+  key_name      = "keypairnewaccount"
   subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [
       aws_security_group.ssh_access.id
   ]
 
-  user_data = <<-EOF
-        #!/bin/bash
-        sudo apt-get update -y
-        sudo apt-get install apache2 -y
-        sudo systemctl start apache2
-        sudo systemctl enable apache2
-        echo "<html><body><h1>Welcome to my website!</h1></body></html>" > /var/www/html/index.html
-        sudo systemctl restart apache2
-  EOF
+user_data = <<-EOF
+    #!/bin/bash
+    sudo apt-get update -y  # Update package lists with -y for automatic yes to prompts
+    sudo apt-get install apache2 -y  # Install Apache web server with -y for automatic yes to prompts
+    sudo systemctl start apache2  # Start Apache service
+    sudo systemctl enable apache2  # Enable Apache service to start on boot
+    echo "<html><body><h1>Welcome to my website!</h1></body></html>" > /var/www/html/index.html  # Create a simple index.html file with a welcome message
+    sudo systemctl restart apache2  # Restart Apache service to apply changes
+EOF
+
 
   
     tags = {
