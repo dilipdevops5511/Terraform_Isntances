@@ -50,7 +50,7 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_instance" "web_server" {
   ami           = "ami-05e00961530ae1b55"
-  instance_type = "t2.micro"
+  instance_type = "t2.small"
   key_name      = "keypairnewaccount"
   subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [
