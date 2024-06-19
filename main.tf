@@ -43,3 +43,57 @@ resource "aws_route_table" "public" {
   }
 }
 
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_instance" "web_server" {
+  ami           = "ami-0f8ca728008ff5af4"
+  instance_type = "t2.micro"
+  key_name      = "terraform-key"
+  subnet_id     = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [
+      aws_security_group.ssh_access.id
+  ]
+
+  user_data = <<-EOF
+        #!/bin/bash
+        sudo apt-get update -y
+        sudo apt-get install apache2 -y
+        sudo systemctl start apache2
+        sudo systemctl enable apache2
+        echo "<html><body><h1>Welcome to my website!</h1></body></html>" > /var/www/html/index.html
+        sudo systemctl restart apache2
+  EOF
+
+  
+    tags = {
+        Name = "Terraform Instances"
+    }
+}
+
+resource "aws_security_group" "ssh_access" {
+  name_prefix = "ssh_access"
+  vpc_id      =  aws_vpc.main.id
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+  
+resource "aws_eip" "eip" {
+  instance = aws_instance.web_server.id
+  
+  tags = {
+    Name = "test-eip"
+  }
+}
